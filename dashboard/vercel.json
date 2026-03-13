@@ -3,6 +3,15 @@
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
   "framework": null,
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "crons": [
     {
       "path": "/api/ceo/run",
@@ -12,8 +21,5 @@
       "path": "/api/gtd/process",
       "schedule": "0 8 * * *"
     }
-  ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Welday Open Brain — Deep Space Intelligence palette ──
+       Dark-first: near-black surfaces with electric cyan accent.
+       Signals: precision, AI, command-and-control, 11 ventures at a glance.
+    */
+    --background: 222 20% 8%;
+    --foreground: 210 15% 88%;
+
+    --card: 222 18% 11%;
+    --card-foreground: 210 15% 88%;
+
+    --popover: 222 18% 11%;
+    --popover-foreground: 210 15% 88%;
+
+    --primary: 186 85% 52%;          /* electric cyan */
+    --primary-foreground: 222 20% 8%;
+
+    --secondary: 222 15% 16%;
+    --secondary-foreground: 210 15% 88%;
+
+    --muted: 222 15% 14%;
+    --muted-foreground: 215 10% 55%;
+
+    --accent: 186 85% 52%;
+    --accent-foreground: 222 20% 8%;
+
+    --destructive: 350 65% 55%;
+    --destructive-foreground: 210 15% 88%;
+
+    --border: 222 15% 18%;
+    --input: 222 15% 16%;
+    --ring: 186 85% 52%;
+
+    --radius: 0.5rem;
+
+    /* Semantic venture colors */
+    --color-active:   142 60% 45%;   /* green */
+    --color-queued:   215 60% 55%;   /* blue */
+    --color-high-risk: 350 65% 55%;  /* red */
+    --color-med-risk: 40 75% 55%;    /* amber */
+    --color-low-risk: 142 60% 45%;   /* green */
+  }
+
+  /* Light mode (if user toggles) */
+  .light {
+    --background: 220 15% 97%;
+    --foreground: 222 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 20% 12%;
+    --primary: 186 80% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 93%;
+    --secondary-foreground: 222 20% 12%;
+    --muted: 220 10% 93%;
+    --muted-foreground: 220 8% 46%;
+    --accent: 186 80% 30%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 350 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 10% 86%;
+    --input: 220 10% 93%;
+    --ring: 186 80% 30%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Geist', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Tabular numbers for all data/metrics */
+  .tabular { font-variant-numeric: tabular-nums lining-nums; }
+}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+/* ── CEO pulse animation ── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(186 85% 52% / 0.3); }
+  50% { box-shadow: 0 0 0 8px hsl(186 85% 52% / 0); }
+}
+.pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+/* ── Search bar glow ── */
+.search-glow:focus-within {
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4), 0 0 24px hsl(var(--primary) / 0.15);
+}
+
+/* ── Readiness bar ── */
+.readiness-bar {
+  background: linear-gradient(90deg, hsl(186 85% 52%), hsl(186 60% 65%));
+  border-radius: 2px;
+  height: 3px;
+}
+
+/* ── Venture card hover ── */
+.venture-card {
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.venture-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2), 0 8px 24px hsl(0 0% 0% / 0.3);
+  transform: translateY(-1px);
+}
+
+/* ── Status badges ── */
+.status-active { @apply bg-green-500/15 text-green-400 border-green-500/20; }
+.status-queued { @apply bg-blue-500/15 text-blue-400 border-blue-500/20; }
+.status-paused { @apply bg-amber-500/15 text-amber-400 border-amber-500/20; }
+.status-archived { @apply bg-neutral-500/15 text-neutral-400 border-neutral-500/20; }
+
+.risk-low { @apply bg-green-500/15 text-green-400; }
+.risk-medium { @apply bg-amber-500/15 text-amber-400; }
+.risk-high { @apply bg-red-500/15 text-red-400; }
+
+/* ── Priority indicators ── */
+.priority-critical { @apply text-red-400; }
+.priority-high { @apply text-orange-400; }
+.priority-medium { @apply text-amber-400; }
+.priority-low { @apply text-muted-foreground; }

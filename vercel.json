@@ -2,13 +2,11 @@
   "crons": [
     {
       "path": "/api/ceo/run",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/gtd/process",
+      "schedule": "0 8 * * *"
     }
-  ],
-  "env": {
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
-    "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
-    "OPENAI_API_KEY": "@openai-api-key"
-  }
+  ]
 }

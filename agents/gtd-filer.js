@@ -2,14 +2,8 @@
  * WELDAY ENTERPRISES — GTD FILER AGENT
  * ----------------------------------------
  * Run: node gtd-filer.js
- * Schedule: Hourly, or triggered by /process Telegram command
- * 
- * What it does:
- *   1. Fetches all unprocessed inbox items
- *   2. For each item, calls GPT-4o-mini to classify and route it
- *   3. Creates a GTD action, project, reference, or someday item
- *   4. Marks inbox item as processed
- *   5. Optionally: proposes schema changes if new category detected
+ * Schedule: Daily, or triggered by /process Telegram command
+ * Model: Google Gemini (free tier)
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -19,21 +13,25 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-1.5-flash';
+
+async function callGemini(prompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+    }),
+  });
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+}
 
 async function classifyItem(text) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0.3,
-      messages: [{
-        role: 'user',
-        content: `Classify this GTD inbox item and tell me where to file it.
+  const prompt = `Classify this GTD inbox item and tell me where to file it.
 
 Inbox text: "${text}"
 
@@ -54,13 +52,9 @@ Respond with JSON only:
   "context": "@computer" | "@phone" | "@errands" | "@waiting" | null,
   "energy": "high" | "medium" | "low",
   "confidence": 0.0-1.0
-}`
-      }]
-    }),
-  });
-  
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '{}';
+}`;
+
+  const content = await callGemini(prompt);
   try {
     return JSON.parse(content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim());
   } catch {
@@ -73,7 +67,7 @@ async function fileItem(inbox, classification) {
     .from('ventures')
     .select('id, slug')
     .eq('slug', classification.venture_slug || '');
-  
+
   const ventureId = ventures?.[0]?.id || null;
 
   if (classification.destination === 'action') {
@@ -113,7 +107,6 @@ async function fileItem(inbox, classification) {
   }
   // 'trash' → just mark processed, don't create anything
 
-  // Mark inbox item processed
   await supabase.from('gtd_inbox').update({
     processed: true,
     processed_at: new Date().toISOString(),
@@ -162,7 +155,7 @@ async function runFiler() {
     tables_read: ['gtd_inbox', 'ventures'],
     tables_written: ['gtd_actions', 'gtd_projects', 'gtd_someday', 'gtd_reference', 'gtd_inbox'],
     duration_ms: Date.now() - startTime,
-    model_used: 'gpt-4o-mini',
+    model_used: GEMINI_MODEL,
     success: true,
   });
 

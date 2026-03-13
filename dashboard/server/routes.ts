@@ -18,20 +18,40 @@ function getSupabase() {
   return createClient(url, key);
 }
 
-// ─── OpenAI chat ──────────────────────────────────────────────────────────────
+// ─── Gemini chat (free tier) ─────────────────────────────────────────────────
+const GEMINI_MODEL = "gemini-1.5-flash";
 async function openAIChat(messages: any[], maxTokens = 300) {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) throw new Error("OPENAI_API_KEY not set");
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY not set");
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  // Extract system message if present, rest are conversation turns
+  const systemMsg = messages.find((m: any) => m.role === "system");
+  const turns = messages.filter((m: any) => m.role !== "system");
+
+  // Gemini needs strictly alternating user/model roles — ensure last is user
+  const contents = turns.map((m: any) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const body: any = {
+    contents,
+    generationConfig: { temperature: 0.6, maxOutputTokens: maxTokens },
+  };
+  if (systemMsg) {
+    body.systemInstruction = { parts: [{ text: systemMsg.content }] };
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
-    body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.6, max_tokens: maxTokens, messages }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 
-  if (!res.ok) throw new Error(`OpenAI: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini: ${await res.text()}`);
   const data = await res.json() as any;
-  return { content: data.choices?.[0]?.message?.content || "", tokens: data.usage?.total_tokens || 0 };
+  return { content: data.candidates?.[0]?.content?.parts?.[0]?.text || "", tokens: 0 };
 }
 
 // ─── Live context from Supabase ───────────────────────────────────────────────
@@ -217,7 +237,7 @@ async function handleTelegramMessage(botName: string, message: any) {
       action: "chat",
       input_summary: text.substring(0,100),
       output_summary: reply.substring(0,100),
-      model_used: "gpt-4o-mini",
+      model_used: GEMINI_MODEL,
       success: true,
     }).catch(()=>{});
   }

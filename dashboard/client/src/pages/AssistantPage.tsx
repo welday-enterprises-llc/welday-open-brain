@@ -165,7 +165,7 @@ export function AssistantPage() {
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: "Connection error — check your Supabase + OpenAI environment variables.",
+        content: "Connection error — check your Supabase + Gemini environment variables.",
         ts: new Date(),
       }]);
     } finally {

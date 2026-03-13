@@ -80,7 +80,7 @@ export function SettingsPage() {
           <SetupItem
             done={false}
             label="Virtual CEO agent — schedule hourly run"
-            detail="ceo-agent/run.js calls OpenAI/Claude, analyzes ventures, writes to ceo_recommendations"
+            detail="ceo-agent/run.js calls Gemini 1.5 Flash, analyzes ventures, writes to ceo_recommendations"
           />
           <SetupItem
             done={false}

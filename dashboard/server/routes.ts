@@ -283,7 +283,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
       if (supabase) supabase.from("agent_logs").insert({
         agent_name:"ea_agent_dashboard", action:"chat",
         input_summary:message.substring(0,100), output_summary:reply.substring(0,100),
-        model_used:"gpt-4o-mini", tokens_used:tokens, success:true,
+        model_used: GEMINI_MODEL, tokens_used:tokens, success:true,
       }).catch(()=>{});
 
       res.json({ reply });

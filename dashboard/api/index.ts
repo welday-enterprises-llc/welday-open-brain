@@ -31,16 +31,20 @@ function getSupabase() {
   } catch { return null; }
 }
 
-// ─── Gemini ───────────────────────────────────────────────────────────────────
-async function gemini(systemPrompt: string, messages: { role: string; content: string }[], maxTokens = 300): Promise<string> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY not set");
+// ─── Gemini (with key fallback) ──────────────────────────────────────────────
+function getGeminiKeys(): string[] {
+  return [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+  ].filter(Boolean) as string[];
+}
 
+async function callGeminiWithKey(key: string, systemPrompt: string, messages: { role: string; content: string }[], maxTokens: number) {
   const contents = messages.map(m => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
   }));
-
   const resp = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
     {
@@ -55,10 +59,34 @@ async function gemini(systemPrompt: string, messages: { role: string; content: s
   );
   if (!resp.ok) {
     const txt = await resp.text();
-    throw new Error(`Gemini ${resp.status}: ${txt}`);
+    const err = new Error(`Gemini ${resp.status}: ${txt}`) as any;
+    err.status = resp.status;
+    throw err;
   }
   const data = await resp.json() as any;
   return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+async function gemini(systemPrompt: string, messages: { role: string; content: string }[], maxTokens = 300): Promise<string> {
+  const keys = getGeminiKeys();
+  if (!keys.length) throw new Error("No GEMINI_API_KEY set");
+
+  let lastErr: any;
+  for (const key of keys) {
+    try {
+      return await callGeminiWithKey(key, systemPrompt, messages, maxTokens);
+    } catch (err: any) {
+      lastErr = err;
+      // Only fall through to next key on quota/rate limit errors
+      if (err.status === 429 || err.status === 403) {
+        console.warn(`[Gemini] Key exhausted (${err.status}), trying next key...`);
+        continue;
+      }
+      // Any other error — throw immediately
+      throw err;
+    }
+  }
+  throw lastErr;
 }
 
 // ─── Context builder ──────────────────────────────────────────────────────────

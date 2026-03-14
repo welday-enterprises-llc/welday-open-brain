@@ -33,11 +33,18 @@ function getSupabase() {
 
 // ─── Gemini (with key fallback) ──────────────────────────────────────────────
 function getGeminiKeys(): string[] {
-  return [
-    process.env.GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3,
-  ].filter(Boolean) as string[];
+  // Reads GEMINI_API_KEY, GEMINI_API_KEY_2 ... GEMINI_API_KEY_N automatically
+  // Add as many keys as you want in Vercel env vars — no code change needed
+  const keys: string[] = [];
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  let i = 2;
+  while (true) {
+    const k = process.env[`GEMINI_API_KEY_${i}`];
+    if (!k) break;
+    keys.push(k);
+    i++;
+  }
+  return keys;
 }
 
 async function callGeminiWithKey(key: string, systemPrompt: string, messages: { role: string; content: string }[], maxTokens: number) {

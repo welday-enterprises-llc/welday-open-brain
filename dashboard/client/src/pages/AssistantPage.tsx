@@ -153,7 +153,7 @@ export function AssistantPage() {
       });
 
       const data = await res.json();
-      const reply = data.reply || "Sorry, something went wrong.";
+      const reply = data.reply || data.error || "Sorry, something went wrong.";
 
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),

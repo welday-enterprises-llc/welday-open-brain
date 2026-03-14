@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 
 // ─── Response helper ──────────────────────────────────────────────────────────
 function send(res: ServerResponse, code: number, data: any) {

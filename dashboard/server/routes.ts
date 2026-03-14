@@ -19,7 +19,7 @@ function getSupabase() {
 }
 
 // ─── Gemini chat (free tier) ─────────────────────────────────────────────────
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 async function openAIChat(messages: any[], maxTokens = 300) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY not set");

@@ -93,7 +93,10 @@ async function gemini(systemPrompt: string, messages: { role: string; content: s
       throw err;
     }
   }
-  throw lastErr;
+  // All keys exhausted
+  const quotaErr = new Error("Daily AI quota reached — I'll be back tomorrow at midnight. You can add more API keys in Vercel settings to extend capacity.") as any;
+  quotaErr.status = 429;
+  throw quotaErr;
 }
 
 // ─── Context builder ──────────────────────────────────────────────────────────
